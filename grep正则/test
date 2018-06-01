@@ -1,0 +1,6 @@
+#!/bin/bash
+CMD_PATH=`dirname $0`
+cd $CMD_PATH
+grep -E -r -o -h '@\"\W*\"\.[a-z0-9]+_localizedString' . >./output.txt
+echo '已输出到'$CMD_PATH'/output.txt'
+exit 0 
