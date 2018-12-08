@@ -1,0 +1,57 @@
+#!/bin/bash
+# Author xixixi
+
+DATE=`date +%Y%m%d_%H%M`
+SOURCEPATH=$( cd "$( dirname $0 )" ; pwd )
+SCHEME="${SOURCEPATH##*/}"
+IPAPATH=~/Desktop/$DATE
+IPANAME=$SCHEME"_"$DATE.ipa
+#echo $SCHEME
+#echo $IPAPATH
+echo $SOURCEPATH
+#echo $IPANAME
+echo "--------------------------------"
+cd $SOURCEPATH
+branch=`git branch -a`
+branchArr=(${branch// /})
+for var in ${branchArr[@]}
+do
+	echo $var
+done
+
+echo "---------------------------------"
+echo -n "请输入需要打包的分支: "
+read branchName
+git reset --hard
+git checkout $branchName
+
+# build
+xcodebuild -workspace ${SCHEME}".xcworkspace" \
+-scheme $SCHEME \
+-configuration Release \
+clean \
+build \
+-derivedDataPath $IPAPATH
+
+if [ -e $IPAPATH ]; then
+    echo "Build Successful"
+else
+    echo "Build failed"
+    exit 1
+fi
+
+# xcrun ipa
+xcrun -sdk iphoneos PackageApplication \
+    -v $IPAPATH/Build/Products/Release-iphoneos/$SCHEME.app \
+    -o ~/Desktop/$IPANAME
+
+myname=`whoami`
+if [ -e /Users/$myname/Desktop/$IPANAME ];then
+    echo -e "\n-----------------------\n\n"
+    echo "打包成功\n"
+    rm -rf $IPAPATH
+else
+    echo -e '\n-----------------------\n\n'
+    echo '打包失败,请检查配置\n'
+fi
+
